@@ -1,4 +1,4 @@
-name: 
+name: Release
 
 on:
   push:
@@ -83,7 +83,7 @@ jobs:
         mkdir -p dist
         
         # Build the binary
-        go build -ldflags="-s -w" -o dist/go-proxy-rotator-${{ matrix.suffix }} .
+        go build -ldflags="-s -w" -o dist/go-proxy-forwarder-${{ matrix.suffix }} .
 
     - name: Create release package
       run: |
@@ -94,7 +94,7 @@ jobs:
         ls -la
         
         # Define package directory name
-        PACKAGE_DIR="go-proxy-rotator-${{ matrix.suffix }}-package"
+        PACKAGE_DIR="go-proxy-forwarder-${{ matrix.suffix }}-package"
         
         # Clean up any existing directory
         rm -rf "${PACKAGE_DIR}"
@@ -103,7 +103,7 @@ jobs:
         mkdir -p "${PACKAGE_DIR}"
         
         # Copy binary
-        cp "go-proxy-rotator-${{ matrix.suffix }}" "${PACKAGE_DIR}/"
+        cp "go-proxy-forwarder-${{ matrix.suffix }}" "${PACKAGE_DIR}/"
         
         # Copy additional files (check if they exist first)
         [ -f ../README.md ] && cp ../README.md "${PACKAGE_DIR}/" || echo "README.md not found"
@@ -116,18 +116,18 @@ jobs:
         
         # Create archive
         if [ "${{ matrix.goos }}" = "windows" ]; then
-          zip -r "go-proxy-rotator-${{ matrix.suffix }}.zip" "${PACKAGE_DIR}"
+          zip -r "go-proxy-forwarder-${{ matrix.suffix }}.zip" "${PACKAGE_DIR}"
         else
-          tar -czf "go-proxy-rotator-${{ matrix.suffix }}.tar.gz" "${PACKAGE_DIR}"
+          tar -czf "go-proxy-forwarder-${{ matrix.suffix }}.tar.gz" "${PACKAGE_DIR}"
         fi
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: go-proxy-rotator-${{ matrix.suffix }}
+        name: go-proxy-forwarder-${{ matrix.suffix }}
         path: |
-          dist/go-proxy-rotator-${{ matrix.suffix }}.tar.gz
-          dist/go-proxy-rotator-${{ matrix.suffix }}.zip
+          dist/go-proxy-forwarder-${{ matrix.suffix }}.tar.gz
+          dist/go-proxy-forwarder-${{ matrix.suffix }}.zip
         retention-days: 30
         if-no-files-found: ignore
 
@@ -165,9 +165,9 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.tag.outputs.tag }}
-        name: Release ${{ steps.tag.outputs.tag }}
+        name: ${{ steps.tag.outputs.tag }}
         body: |
-          ## Go Proxy Rotator ${{ steps.tag.outputs.tag }}
+          ## Go Proxy Forwarder ${{ steps.tag.outputs.tag }}
           
           ### Features
           - 🔄 Smart proxy rotation with health monitoring
@@ -179,16 +179,16 @@ jobs:
           ### Downloads
           Choose the appropriate binary for your platform:
           
-          - **Linux AMD64**: `go-proxy-rotator-linux-amd64.tar.gz`
-          - **Linux ARM64**: `go-proxy-rotator-linux-arm64.tar.gz`
-          - **Windows AMD64**: `go-proxy-rotator-windows-amd64.exe.zip`
-          - **macOS Intel**: `go-proxy-rotator-darwin-amd64.tar.gz`
-          - **macOS Apple Silicon**: `go-proxy-rotator-darwin-arm64.tar.gz`
+          - **Linux AMD64**: `go-proxy-forwarder-linux-amd64.tar.gz`
+          - **Linux ARM64**: `go-proxy-forwarder-linux-arm64.tar.gz`
+          - **Windows AMD64**: `go-proxy-forwarder-windows-amd64.exe.zip`
+          - **macOS Intel**: `go-proxy-forwarder-darwin-amd64.tar.gz`
+          - **macOS Apple Silicon**: `go-proxy-forwarder-darwin-arm64.tar.gz`
           
           ### Quick Start
           1. Download the appropriate binary for your platform
           2. Extract the archive
-          3. Run the executable: `./go-proxy-rotator` (or `go-proxy-rotator.exe` on Windows)
+          3. Run the executable: `./go-proxy-forwarder` (or `go-proxy-forwarder.exe` on Windows)
           4. Open `http://localhost:3000` in your browser
           
           ### Configuration
