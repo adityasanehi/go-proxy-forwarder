@@ -1,6 +1,6 @@
 # Go Proxy Forwarder
 
-An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, forwarding your requests through randomly selected proxies from a persistent database with health monitoring and management features.
+An advanced proxy forwarder built with Go and Fiber. It acts as a proxy server, forwarding your requests through randomly selected proxies from a persistent database with health monitoring and management features.
 
 ## Features
 
@@ -37,20 +37,20 @@ An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, fo
 1. **Download the latest release:**
    - Go to the [Releases page](../../releases)
    - Download the appropriate binary for your platform:
-     - Linux: `go-proxy-rotator-linux-amd64.tar.gz`
-     - Windows: `go-proxy-rotator-windows-amd64.exe.zip`
-     - macOS Intel: `go-proxy-rotator-darwin-amd64.tar.gz`
-     - macOS Apple Silicon: `go-proxy-rotator-darwin-arm64.tar.gz`
+     - Linux: `go-proxy-forwarder-linux-amd64.tar.gz`
+     - Windows: `go-proxy-forwarder-windows-amd64.exe.zip`
+     - macOS Intel: `go-proxy-forwarder-darwin-amd64.tar.gz`
+     - macOS Apple Silicon: `go-proxy-forwarder-darwin-arm64.tar.gz`
 
 2. **Extract and run:**
    ```bash
    # Linux/macOS
-   tar -xzf go-proxy-rotator-*.tar.gz
-   cd go-proxy-rotator-*
-   ./go-proxy-rotator
+   tar -xzf go-proxy-forwarder-*.tar.gz
+   cd go-proxy-forwarder-*
+   ./go-proxy-forwarder
    
    # Windows
-   # Extract the ZIP file and run go-proxy-rotator.exe
+   # Extract the ZIP file and run go-proxy-forwarder.exe
    ```
 
 3. **Access the web interface:**
@@ -66,7 +66,7 @@ An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, fo
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd go-proxy-rotator
+   cd go-proxy-forwarder
    ```
 
 2. **Build and run:**
@@ -76,8 +76,8 @@ An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, fo
    
    # Or manually
    go mod download
-   go build -o go-proxy-rotator .
-   ./go-proxy-rotator
+   go build -o go-proxy-forwarder .
+   ./go-proxy-forwarder
    ```
 
 3. **Access the web interface:**
@@ -96,7 +96,7 @@ The web interface provides:
 
 ### Proxy Usage
 
-Point your HTTP client to `http://localhost:3000` to use the proxy rotator:
+Point your HTTP client to `http://localhost:3000` to use the proxy forwarder:
 
 ```bash
 curl -x http://localhost:3000 https://httpbin.org/ip
@@ -266,7 +266,7 @@ make clean
 ## 📁 Project Structure
 
 ```
-go-proxy-rotator/
+go-proxy-forwarder/
 ├── .github/workflows/   # GitHub Actions CI/CD
 ├── config/             # Configuration management
 ├── database/           # Database operations
