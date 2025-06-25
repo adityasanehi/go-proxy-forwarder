@@ -12,29 +12,12 @@ on:
         default: 'v1.0.0'
 
 jobs:
-  build:
-    name: Build and Release
+  build-linux:
+    name: Build Linux
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
-        include:
-          - goos: linux
-            goarch: amd64
-            suffix: linux-amd64
-          - goos: linux
-            goarch: arm64
-            suffix: linux-arm64
-          - goos: windows
-            goarch: amd64
-            suffix: windows-amd64.exe
-          - goos: darwin
-            goarch: amd64
-            suffix: darwin-amd64
-          - goos: darwin
-            goarch: arm64
-            suffix: darwin-arm64
-
+        goarch: [amd64, arm64]
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -44,96 +27,127 @@ jobs:
       with:
         go-version: '1.21'
 
-    - name: Cache Go modules
-      uses: actions/cache@v3
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-
-    - name: Install dependencies
-      run: go mod download
+    - name: Install cross-compilation tools
+      if: matrix.goarch == 'arm64'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-aarch64-linux-gnu
 
     - name: Build binary
       env:
-        GOOS: ${{ matrix.goos }}
+        GOOS: linux
         GOARCH: ${{ matrix.goarch }}
         CGO_ENABLED: 1
+        CC: ${{ matrix.goarch == 'arm64' && 'aarch64-linux-gnu-gcc' || 'gcc' }}
       run: |
-        if [ "${{ matrix.goos }}" = "linux" ]; then
-          # Install cross-compilation tools for Linux
-          sudo apt-get update
-          sudo apt-get install -y gcc-multilib
-          if [ "${{ matrix.goarch }}" = "arm64" ]; then
-            sudo apt-get install -y gcc-aarch64-linux-gnu
-            export CC=aarch64-linux-gnu-gcc
-          fi
-        elif [ "${{ matrix.goos }}" = "windows" ]; then
-          # Install mingw for Windows cross-compilation
-          sudo apt-get update
-          sudo apt-get install -y gcc-mingw-w64
-          export CC=x86_64-w64-mingw32-gcc
-        elif [ "${{ matrix.goos }}" = "darwin" ]; then
-          # For macOS, we'll disable CGO to avoid cross-compilation issues
-          export CGO_ENABLED=0
-        fi
-        
-        # Create output directory
         mkdir -p dist
+        go build -ldflags="-s -w" -o dist/go-proxy-forwarder-linux-${{ matrix.goarch }} .
         
-        # Build the binary
-        go build -ldflags="-s -w" -o dist/go-proxy-forwarder-${{ matrix.suffix }} .
-
-    - name: Create release package
-      run: |
+        # Create package
+        PACKAGE_DIR="go-proxy-forwarder-linux-${{ matrix.goarch }}-package"
+        mkdir -p dist/${PACKAGE_DIR}
+        cp dist/go-proxy-forwarder-linux-${{ matrix.goarch }} dist/${PACKAGE_DIR}/
+        [ -f README.md ] && cp README.md dist/${PACKAGE_DIR}/
+        [ -f sample_proxies.txt ] && cp sample_proxies.txt dist/${PACKAGE_DIR}/
+        [ -d static ] && cp -r static dist/${PACKAGE_DIR}/
+        
         cd dist
-        
-        # Debug: List current contents
-        echo "Current directory contents:"
-        ls -la
-        
-        # Define package directory name
-        PACKAGE_DIR="go-proxy-forwarder-${{ matrix.suffix }}-package"
-        
-        # Clean up any existing directory
-        rm -rf "${PACKAGE_DIR}"
-        
-        # Create package directory
-        mkdir -p "${PACKAGE_DIR}"
-        
-        # Copy binary
-        cp "go-proxy-forwarder-${{ matrix.suffix }}" "${PACKAGE_DIR}/"
-        
-        # Copy additional files (check if they exist first)
-        [ -f ../README.md ] && cp ../README.md "${PACKAGE_DIR}/" || echo "README.md not found"
-        [ -f ../sample_proxies.txt ] && cp ../sample_proxies.txt "${PACKAGE_DIR}/" || echo "sample_proxies.txt not found"
-        [ -d ../static ] && cp -r ../static "${PACKAGE_DIR}/" || echo "static directory not found"
-        
-        # Debug: Show package contents
-        echo "Package contents:"
-        ls -la "${PACKAGE_DIR}/"
-        
-        # Create archive
-        if [ "${{ matrix.goos }}" = "windows" ]; then
-          zip -r "go-proxy-forwarder-${{ matrix.suffix }}.zip" "${PACKAGE_DIR}"
-        else
-          tar -czf "go-proxy-forwarder-${{ matrix.suffix }}.tar.gz" "${PACKAGE_DIR}"
-        fi
+        tar -czf go-proxy-forwarder-linux-${{ matrix.goarch }}.tar.gz ${PACKAGE_DIR}
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: go-proxy-forwarder-${{ matrix.suffix }}
-        path: |
-          dist/go-proxy-forwarder-${{ matrix.suffix }}.tar.gz
-          dist/go-proxy-forwarder-${{ matrix.suffix }}.zip
-        retention-days: 30
-        if-no-files-found: ignore
+        name: go-proxy-forwarder-linux-${{ matrix.goarch }}
+        path: dist/go-proxy-forwarder-linux-${{ matrix.goarch }}.tar.gz
+
+  build-windows:
+    name: Build Windows
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Install cross-compilation tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-mingw-w64
+
+    - name: Build binary
+      env:
+        GOOS: windows
+        GOARCH: amd64
+        CGO_ENABLED: 1
+        CC: x86_64-w64-mingw32-gcc
+      run: |
+        mkdir -p dist
+        go build -ldflags="-s -w" -o dist/go-proxy-forwarder-windows-amd64.exe .
+        
+        # Create package
+        PACKAGE_DIR="go-proxy-forwarder-windows-amd64.exe-package"
+        mkdir -p dist/${PACKAGE_DIR}
+        cp dist/go-proxy-forwarder-windows-amd64.exe dist/${PACKAGE_DIR}/
+        [ -f README.md ] && cp README.md dist/${PACKAGE_DIR}/
+        [ -f sample_proxies.txt ] && cp sample_proxies.txt dist/${PACKAGE_DIR}/
+        [ -d static ] && cp -r static dist/${PACKAGE_DIR}/
+        
+        cd dist
+        zip -r go-proxy-forwarder-windows-amd64.exe.zip ${PACKAGE_DIR}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-proxy-forwarder-windows-amd64.exe
+        path: dist/go-proxy-forwarder-windows-amd64.exe.zip
+
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        goarch: [amd64, arm64]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Build binary
+      env:
+        GOOS: darwin
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 1
+      run: |
+        mkdir -p dist
+        go build -ldflags="-s -w" -o dist/go-proxy-forwarder-darwin-${{ matrix.goarch }} .
+        
+        # Create package
+        PACKAGE_DIR="go-proxy-forwarder-darwin-${{ matrix.goarch }}-package"
+        mkdir -p dist/${PACKAGE_DIR}
+        cp dist/go-proxy-forwarder-darwin-${{ matrix.goarch }} dist/${PACKAGE_DIR}/
+        [ -f README.md ] && cp README.md dist/${PACKAGE_DIR}/
+        [ -f sample_proxies.txt ] && cp sample_proxies.txt dist/${PACKAGE_DIR}/
+        [ -d static ] && cp -r static dist/${PACKAGE_DIR}/
+        
+        cd dist
+        tar -czf go-proxy-forwarder-darwin-${{ matrix.goarch }}.tar.gz ${PACKAGE_DIR}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: go-proxy-forwarder-darwin-${{ matrix.goarch }}
+        path: dist/go-proxy-forwarder-darwin-${{ matrix.goarch }}.tar.gz
 
   release:
     name: Create Release
-    needs: build
+    needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     
@@ -162,7 +176,7 @@ jobs:
         fi
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.tag.outputs.tag }}
         name: ${{ steps.tag.outputs.tag }}
@@ -201,5 +215,4 @@ jobs:
         files: release-assets/*
         draft: false
         prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
