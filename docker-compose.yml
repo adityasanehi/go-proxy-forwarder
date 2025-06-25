@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  proxy-rotator:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - proxy_data:/data
+    environment:
+      - DATABASE_PATH=/data/proxies.db
+      - PORT=3000
+    restart: unless-stopped
+
+volumes:
+  proxy_data:
