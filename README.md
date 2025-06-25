@@ -4,18 +4,33 @@ An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, fo
 
 ## Features
 
-- 🔄 **Smart Proxy Rotation**: Automatically rotates through healthy proxies
-- 📊 **Health Monitoring**: Tracks proxy response times and failure rates
-- 📤 **File Upload**: Upload proxy lists via web interface or API
-- 💾 **Persistent Storage**: SQLite database for proxy management
-- 🌐 **Web Interface**: User-friendly dashboard for proxy management
-- 🔧 **REST API**: Complete API for proxy CRUD operations
-- 📈 **Statistics**: Real-time proxy statistics and health metrics
-- 🏥 **Health Checks**: Automated proxy health verification
-- 🔐 **Authentication Support**: HTTP and SOCKS5 proxy authentication
-- 📝 **Multiple Formats**: Support for various proxy list formats
+### Core Functionality
+- 🔄 **Smart Proxy Rotation**: Automatically rotates through healthy proxies with intelligent selection
+- 📊 **Health Monitoring**: Real-time tracking of proxy response times, failure rates, and availability
+- 💾 **Persistent Storage**: SQLite database with proper indexing for reliable proxy management
+- 🏥 **Automated Health Checks**: Continuous monitoring with configurable test URLs and intervals
 
-## 🚀 Quick Start
+### User Interface & Experience
+- 🌐 **Modern Web Interface**: Professional dashboard with responsive design and real-time updates
+- 📤 **Drag & Drop Upload**: Intuitive file upload with progress indicators and validation
+- 📈 **Live Statistics**: Real-time metrics with auto-refresh and visual indicators
+- 🔔 **Toast Notifications**: Instant feedback for all user actions with auto-dismiss
+- 💡 **Tooltips & Shortcuts**: Helpful hints and keyboard shortcuts (Ctrl+R, Ctrl+U)
+- 📱 **Mobile Responsive**: Fully optimized for mobile devices and tablets
+
+### API & Integration
+- 🔧 **Comprehensive REST API**: Complete CRUD operations with proper HTTP status codes
+- 📝 **Multiple Input Formats**: Support for various proxy list formats and URL schemes
+- 🔐 **Authentication Support**: HTTP Basic Auth and SOCKS5 proxy authentication
+- 📋 **Detailed Documentation**: Complete API documentation with examples and SDKs
+
+### Advanced Features
+- ⚡ **Performance Optimization**: Response time-based selection and failure tracking
+- 🎯 **Load Balancing**: Intelligent proxy selection based on health and performance
+- 🔍 **Advanced Filtering**: Filter proxies by status, protocol, performance, and more
+- 📊 **Analytics**: Detailed statistics with success rates and performance metrics
+
+## Quick Start
 
 ### Option 1: Download Pre-built Binary (Recommended)
 
@@ -68,7 +83,7 @@ An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, fo
 3. **Access the web interface:**
    Open `http://localhost:3000` in your browser
 
-## 📖 Usage
+## Usage
 
 ### Web Interface
 
@@ -111,7 +126,7 @@ The application supports multiple proxy list formats:
    socks5://user:pass@proxy.example.com:1080
    ```
 
-## 🔧 API Endpoints
+## API Endpoints
 
 ### Proxy Management
 
@@ -147,7 +162,16 @@ curl -X POST -H "Content-Type: application/json" \
 curl http://localhost:3000/api/v1/proxies/stats
 ```
 
-## ⚙️ Configuration
+## API Documentation
+
+### Interactive Documentation
+- **Swagger UI**: `http://localhost:3000/docs` - Interactive API documentation with try-it-out functionality
+- **OpenAPI Spec**: `http://localhost:3000/docs/swagger.yaml` - Machine-readable API specification
+
+### Static Documentation
+- **Comprehensive Guide**: [API Docs](docs/API.md) - Detailed API documentation with examples
+
+## Configuration
 
 Environment variables:
 
@@ -174,7 +198,7 @@ docker-compose down
 
 The server will be accessible at `http://localhost:3000`.
 
-## 🚀 Development & Releases
+## Development & Releases
 
 ### Building Locally
 
@@ -200,69 +224,70 @@ make package
 make clean
 ```
 
-### GitHub Actions
+## 🗺️ Roadmap
 
-This project uses GitHub Actions for automated building and releasing:
+### Phase 1: Core Stability ✅ 
+- [x] Basic proxy rotation with health monitoring
+- [x] SQLite database with proper schema
+- [x] REST API with CRUD operations
+- [x] File upload functionality
+- [x] Basic web interface
 
-#### Automatic Builds
-- **Trigger**: Push to `main` or `develop` branches, or pull requests to `main`
-- **Actions**: 
-  - Run tests and linting
-  - Build binaries for multiple platforms
-  - Upload build artifacts
+### Phase 2: Enhanced UX ✅ 
+- [x] Modern, responsive web interface
+- [x] Real-time statistics and auto-refresh
+- [x] Drag & drop file uploads
+- [x] Toast notifications and user feedback
+- [x] Mobile-optimized design
+- [x] Comprehensive API documentation
 
-#### Releases
-- **Trigger**: Push a git tag (e.g., `v1.0.0`) or manual workflow dispatch
-- **Actions**:
-  - Build binaries for all supported platforms
-  - Create release packages with static files
-  - Automatically create GitHub release with binaries
+### Phase 3: Advanced Features 🚧
+- [ ] **Geo-location Support**: Country/city detection for proxies
+- [ ] **Advanced Analytics**: Historical performance graphs and trends
+- [ ] **Notification System**: Email/webhook alerts for proxy failures
+- [ ] **Load Balancing**: Weighted round-robin and least connections
+- [ ] **Proxy Chaining**: Multi-hop proxy support
+- [ ] **Custom Health Checks**: Configurable test URLs and intervals
 
-#### Creating a Release
-
-1. **Tag and push:**
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-
-2. **Or use GitHub CLI:**
-   ```bash
-   gh release create v1.0.0 --generate-notes
-   ```
-
-3. **Manual release via GitHub Actions:**
-   - Go to Actions tab in GitHub
-   - Select "Release" workflow
-   - Click "Run workflow"
-   - Enter the desired tag name
-
-#### Supported Platforms
-
-The GitHub Actions automatically build for:
-- Linux (AMD64, ARM64)
-- Windows (AMD64)
-- macOS (Intel, Apple Silicon)
-
-Each release includes:
-- Pre-compiled binaries
-- Static web interface files
-- Sample proxy list
-- Documentation
+### Phase 4: Enterprise Features 🔮 
+- [ ] **User Authentication**: Login system with role-based access
+- [ ] **Multi-tenancy**: Support for multiple users/organizations
+- [ ] **Audit Logging**: Comprehensive activity logs
+- [ ] **High Availability**: Clustering and failover support
+- [ ] **Monitoring Integration**: Prometheus/Grafana metrics
+- [ ] **API Rate Limiting**: Request throttling and quotas
+- [ ] **Docker Swarm Support**: Native swarm deployment
+- [ ] **IPv6 Support**: Full IPv6 proxy compatibility
+- [ ] **SOCKS4 Support**: Additional protocol support
+- [ ] **Proxy Rotation Algorithms**: Custom rotation strategies
+- [ ] **Backup/Restore**: Database backup and migration tools
+- [ ] **Performance Benchmarking**: Built-in speed testing
 
 ## 📁 Project Structure
 
 ```
 go-proxy-rotator/
-├── config/          # Configuration management
-├── database/        # Database operations
-├── handlers/        # HTTP handlers
-├── models/          # Data models
-├── services/        # Business logic
-├── static/          # Web interface files
-├── main.go          # Application entry point
-├── sample_proxies.txt # Example proxy list
-└── README.md
+├── .github/workflows/   # GitHub Actions CI/CD
+├── config/             # Configuration management
+├── database/           # Database operations
+├── docs/               # API documentation
+│   ├── swagger.yaml    # OpenAPI 3.0 specification
+|   ├── API.md # Comprehensive API guide
+|   ├── DEPLOYMENT.md # Comprehensive Deployment guide
+|   └── UI.md # Comprehensive UI updates
+├── handlers/           # HTTP handlers
+│   ├── proxy_handlers.go
+│   └── swagger_handler.go
+├── models/             # Data models
+├── services/           # Business logic
+├── static/             # Web interface files
+├── tools/              # Development tools
+│   └── swagger-gen.go  # OpenAPI validation/conversion
+├── main.go             # Application entry point
+├── Makefile            # Build automation
+├── Dockerfile          # Docker configuration
+├── docker-compose.yml  # Docker Compose setup
+└── README.md           # Project documentation
 ```
 
 ## Contributing

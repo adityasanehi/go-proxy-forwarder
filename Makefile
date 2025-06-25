@@ -148,21 +148,40 @@ docker-run: docker-build
 	@echo "Running Docker container..."
 	docker run -p 3000:3000 -v proxy_data:/data ${BINARY_NAME}:${VERSION}
 
+# Swagger/OpenAPI
+.PHONY: swagger-validate
+swagger-validate:
+	@echo "Validating OpenAPI specification..."
+	go run tools/swagger-gen.go validate
+
+.PHONY: swagger-json
+swagger-json:
+	@echo "Converting OpenAPI spec to JSON..."
+	go run tools/swagger-gen.go json
+
+.PHONY: swagger-yaml
+swagger-yaml:
+	@echo "Converting OpenAPI spec to YAML..."
+	go run tools/swagger-gen.go yaml
+
 # Help
 .PHONY: help
 help:
 	@echo "Available targets:"
-	@echo "  build         - Build the application"
-	@echo "  build-all     - Build for all platforms"
-	@echo "  run           - Build and run the application"
-	@echo "  dev           - Run in development mode"
-	@echo "  clean         - Clean build artifacts"
-	@echo "  test          - Run tests"
-	@echo "  test-coverage - Run tests with coverage"
-	@echo "  fmt           - Format code"
-	@echo "  lint          - Lint code"
-	@echo "  deps          - Install dependencies"
-	@echo "  package       - Create release packages"
-	@echo "  docker-build  - Build Docker image"
-	@echo "  docker-run    - Build and run Docker container"
-	@echo "  help          - Show this help message"
+	@echo "  build           - Build the application"
+	@echo "  build-all       - Build for all platforms"
+	@echo "  run             - Build and run the application"
+	@echo "  dev             - Run in development mode"
+	@echo "  clean           - Clean build artifacts"
+	@echo "  test            - Run tests"
+	@echo "  test-coverage   - Run tests with coverage"
+	@echo "  fmt             - Format code"
+	@echo "  lint            - Lint code"
+	@echo "  deps            - Install dependencies"
+	@echo "  package         - Create release packages"
+	@echo "  docker-build    - Build Docker image"
+	@echo "  docker-run      - Build and run Docker container"
+	@echo "  swagger-validate - Validate OpenAPI specification"
+	@echo "  swagger-json    - Convert OpenAPI spec to JSON"
+	@echo "  swagger-yaml    - Convert OpenAPI spec to YAML"
+	@echo "  help            - Show this help message"

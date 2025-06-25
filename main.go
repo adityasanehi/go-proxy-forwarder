@@ -47,6 +47,7 @@ func main() {
 
 	// Initialize handlers
 	proxyHandler := handlers.NewProxyHandler(proxyService)
+	swaggerHandler := handlers.NewSwaggerHandler()
 
 	// Load initial proxies if database is empty
 	if err := loadInitialProxies(proxyService, db); err != nil {
@@ -75,6 +76,9 @@ func main() {
 	api.Delete("/proxies", proxyHandler.ClearAllProxies)
 	api.Get("/proxies/stats", proxyHandler.GetProxyStats)
 	api.Post("/proxies/health-check", proxyHandler.HealthCheckProxies)
+
+	// Setup Swagger documentation
+	swaggerHandler.SetupSwaggerRoutes(app)
 
 	// Static files
 	app.Static("/", "./static")

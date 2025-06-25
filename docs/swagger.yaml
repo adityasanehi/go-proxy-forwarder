@@ -1,0 +1,659 @@
+openapi: 3.0.3
+info:
+  title: Go Proxy Rotator API
+  description: |
+    Advanced proxy rotation service with health monitoring and management features.
+    
+    ## Features
+    - Smart proxy rotation with health monitoring
+    - Real-time statistics and analytics
+    - File upload for bulk proxy management
+    - Comprehensive health checking
+    - Support for HTTP, HTTPS, and SOCKS5 proxies
+    
+    ## Authentication
+    Currently, the API does not require authentication. All endpoints are publicly accessible.
+    
+    ## Rate Limiting
+    No rate limiting is currently implemented.
+    
+  version: 1.0.0
+  contact:
+    name: Go Proxy Rotator
+    url: https://github.com/your-repo/go-proxy-rotator
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://your-domain.com
+    description: Production server
+
+tags:
+  - name: Proxy Management
+    description: Operations for managing proxies
+  - name: Statistics
+    description: Proxy statistics and analytics
+  - name: Health Monitoring
+    description: Health check operations
+  - name: System
+    description: System health and information
+
+paths:
+  /api/v1/proxies/upload:
+    post:
+      tags:
+        - Proxy Management
+      summary: Upload proxy list file
+      description: |
+        Upload a text file containing proxy configurations. Supports multiple formats:
+        - `host:port:username:password`
+        - `host:port` (no authentication)
+        - `protocol://username:password@host:port`
+      operationId: uploadProxyFile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Text file containing proxy list (.txt format)
+              required:
+                - file
+            examples:
+              proxy_file:
+                summary: Example proxy file
+                value: |
+                  # Proxy list example
+                  192.168.1.100:8080:user1:pass1
+                  192.168.1.101:8080:user2:pass2
+                  203.0.113.1:3128
+                  http://user:pass@proxy.example.com:8080
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+              examples:
+                success:
+                  summary: Successful upload
+                  value:
+                    message: "Proxies uploaded successfully"
+                    total_parsed: 50
+                    total_added: 45
+                    total_skipped: 5
+        '400':
+          description: Bad request - invalid file or format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_file:
+                  summary: Invalid file type
+                  value:
+                    error: "Only .txt files are allowed"
+                no_file:
+                  summary: No file provided
+                  value:
+                    error: "No file uploaded"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/proxies:
+    get:
+      tags:
+        - Proxy Management
+      summary: Get all proxies
+      description: Retrieve all proxies from the database with their current status and statistics
+      operationId: getAllProxies
+      responses:
+        '200':
+          description: List of all proxies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyListResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    post:
+      tags:
+        - Proxy Management
+      summary: Add single proxy
+      description: Add a single proxy to the database
+      operationId: addProxy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProxyInput'
+            examples:
+              http_proxy:
+                summary: HTTP proxy with authentication
+                value:
+                  host: "192.168.1.100"
+                  port: 8080
+                  username: "user1"
+                  password: "pass1"
+                  protocol: "http"
+              simple_proxy:
+                summary: Simple proxy without authentication
+                value:
+                  host: "203.0.113.1"
+                  port: 3128
+                  protocol: "http"
+              socks5_proxy:
+                summary: SOCKS5 proxy
+                value:
+                  host: "proxy.example.com"
+                  port: 1080
+                  username: "socksuser"
+                  password: "sockspass"
+                  protocol: "socks5"
+      responses:
+        '201':
+          description: Proxy created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyCreateResponse'
+        '400':
+          description: Bad request - invalid proxy data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    delete:
+      tags:
+        - Proxy Management
+      summary: Clear all proxies
+      description: Remove all proxies from the database
+      operationId: clearAllProxies
+      responses:
+        '200':
+          description: All proxies cleared successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/proxies/active:
+    get:
+      tags:
+        - Proxy Management
+      summary: Get active proxies
+      description: Retrieve only active and healthy proxies
+      operationId: getActiveProxies
+      responses:
+        '200':
+          description: List of active proxies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyListResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/proxies/{id}:
+    delete:
+      tags:
+        - Proxy Management
+      summary: Delete proxy
+      description: Delete a specific proxy by ID
+      operationId: deleteProxy
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Proxy ID
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        '200':
+          description: Proxy deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Proxy not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Proxy not found
+                  value:
+                    error: "Proxy with id 123 not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/proxies/stats:
+    get:
+      tags:
+        - Statistics
+      summary: Get proxy statistics
+      description: Retrieve comprehensive statistics about all proxies
+      operationId: getProxyStats
+      responses:
+        '200':
+          description: Proxy statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProxyStats'
+              examples:
+                stats:
+                  summary: Example statistics
+                  value:
+                    total_proxies: 100
+                    active_proxies: 85
+                    healthy_proxies: 75
+                    failed_proxies: 15
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/proxies/health-check:
+    post:
+      tags:
+        - Health Monitoring
+      summary: Run health check
+      description: Perform health checks on all active proxies
+      operationId: runHealthCheck
+      parameters:
+        - name: url
+          in: query
+          required: false
+          description: Custom test URL for health checks
+          schema:
+            type: string
+            format: uri
+            default: "https://httpbin.org/ip"
+            example: "https://httpbin.org/ip"
+      responses:
+        '200':
+          description: Health check completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                success:
+                  summary: Health check completed
+                  value:
+                    message: "Health check completed"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      tags:
+        - System
+      summary: Application health status
+      description: Check the overall health and status of the application
+      operationId: getApplicationHealth
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: Healthy application
+                  value:
+                    status: "ok"
+                    time: "2024-01-15T10:30:00Z"
+                    version: "v1.0.0"
+                    build_time: "2024-01-15_09:00:00"
+                    git_commit: "abc123f"
+
+components:
+  schemas:
+    Proxy:
+      type: object
+      description: Proxy configuration and status information
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique proxy identifier
+          example: 1
+        host:
+          type: string
+          description: Proxy host or IP address
+          example: "192.168.1.100"
+        port:
+          type: integer
+          format: int32
+          description: Proxy port number
+          minimum: 1
+          maximum: 65535
+          example: 8080
+        username:
+          type: string
+          description: Authentication username (optional)
+          example: "user1"
+        password:
+          type: string
+          description: Authentication password (optional)
+          example: "pass1"
+        protocol:
+          type: string
+          description: Proxy protocol
+          enum: [http, https, socks5]
+          example: "http"
+        is_active:
+          type: boolean
+          description: Whether the proxy is currently active
+          example: true
+        last_checked:
+          type: string
+          format: date-time
+          description: Timestamp of last health check
+          example: "2024-01-15T10:30:00Z"
+        response_time:
+          type: integer
+          format: int32
+          description: Last response time in milliseconds
+          minimum: 0
+          example: 250
+        fail_count:
+          type: integer
+          format: int32
+          description: Number of consecutive failures
+          minimum: 0
+          example: 0
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when proxy was added
+          example: "2024-01-15T09:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when proxy was last updated
+          example: "2024-01-15T10:30:00Z"
+      required:
+        - id
+        - host
+        - port
+        - protocol
+        - is_active
+        - response_time
+        - fail_count
+        - created_at
+        - updated_at
+
+    ProxyInput:
+      type: object
+      description: Input data for creating a new proxy
+      properties:
+        host:
+          type: string
+          description: Proxy host or IP address
+          example: "192.168.1.100"
+        port:
+          type: integer
+          format: int32
+          description: Proxy port number
+          minimum: 1
+          maximum: 65535
+          example: 8080
+        username:
+          type: string
+          description: Authentication username (optional)
+          example: "user1"
+        password:
+          type: string
+          description: Authentication password (optional)
+          example: "pass1"
+        protocol:
+          type: string
+          description: Proxy protocol
+          enum: [http, https, socks5]
+          default: "http"
+          example: "http"
+      required:
+        - host
+        - port
+
+    ProxyStats:
+      type: object
+      description: Comprehensive proxy statistics
+      properties:
+        total_proxies:
+          type: integer
+          format: int32
+          description: Total number of proxies in database
+          minimum: 0
+          example: 100
+        active_proxies:
+          type: integer
+          format: int32
+          description: Number of active proxies
+          minimum: 0
+          example: 85
+        healthy_proxies:
+          type: integer
+          format: int32
+          description: Number of healthy proxies (active + low fail count + good response time)
+          minimum: 0
+          example: 75
+        failed_proxies:
+          type: integer
+          format: int32
+          description: Number of failed proxies (inactive or high fail count)
+          minimum: 0
+          example: 15
+      required:
+        - total_proxies
+        - active_proxies
+        - healthy_proxies
+        - failed_proxies
+
+    ProxyListResponse:
+      type: object
+      description: Response containing a list of proxies
+      properties:
+        proxies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Proxy'
+          description: Array of proxy objects
+        count:
+          type: integer
+          format: int32
+          description: Number of proxies in the response
+          minimum: 0
+          example: 10
+      required:
+        - proxies
+        - count
+
+    ProxyCreateResponse:
+      type: object
+      description: Response after creating a new proxy
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: "Proxy added successfully"
+        proxy:
+          $ref: '#/components/schemas/Proxy'
+      required:
+        - message
+        - proxy
+
+    UploadResponse:
+      type: object
+      description: Response after uploading a proxy file
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: "Proxies uploaded successfully"
+        total_parsed:
+          type: integer
+          format: int32
+          description: Total number of proxy entries parsed from file
+          minimum: 0
+          example: 50
+        total_added:
+          type: integer
+          format: int32
+          description: Number of proxies successfully added to database
+          minimum: 0
+          example: 45
+        total_skipped:
+          type: integer
+          format: int32
+          description: Number of proxies skipped (duplicates or invalid)
+          minimum: 0
+          example: 5
+      required:
+        - message
+        - total_parsed
+        - total_added
+        - total_skipped
+
+    SuccessResponse:
+      type: object
+      description: Generic success response
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: "Operation completed successfully"
+      required:
+        - message
+
+    ErrorResponse:
+      type: object
+      description: Error response
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+          example: "Invalid request parameters"
+      required:
+        - error
+
+    HealthResponse:
+      type: object
+      description: Application health status response
+      properties:
+        status:
+          type: string
+          description: Application status
+          enum: [ok, error]
+          example: "ok"
+        time:
+          type: string
+          format: date-time
+          description: Current server time
+          example: "2024-01-15T10:30:00Z"
+        version:
+          type: string
+          description: Application version
+          example: "v1.0.0"
+        build_time:
+          type: string
+          description: Build timestamp
+          example: "2024-01-15_09:00:00"
+        git_commit:
+          type: string
+          description: Git commit hash
+          example: "abc123f"
+      required:
+        - status
+        - time
+
+  examples:
+    ProxyExample:
+      summary: Example HTTP proxy
+      value:
+        id: 1
+        host: "192.168.1.100"
+        port: 8080
+        username: "user1"
+        password: "pass1"
+        protocol: "http"
+        is_active: true
+        last_checked: "2024-01-15T10:30:00Z"
+        response_time: 250
+        fail_count: 0
+        created_at: "2024-01-15T09:00:00Z"
+        updated_at: "2024-01-15T10:30:00Z"
+
+    ProxyInputExample:
+      summary: Example proxy input
+      value:
+        host: "192.168.1.100"
+        port: 8080
+        username: "user1"
+        password: "pass1"
+        protocol: "http"
+
+  securitySchemes:
+    # Future authentication schemes can be added here
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication (not currently implemented)
+
+# Future security requirements
+# security:
+#   - ApiKeyAuth: []
