@@ -1,0 +1,190 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            suffix: linux-amd64
+          - goos: linux
+            goarch: arm64
+            suffix: linux-arm64
+          - goos: windows
+            goarch: amd64
+            suffix: windows-amd64.exe
+          - goos: darwin
+            goarch: amd64
+            suffix: darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            suffix: darwin-arm64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Build binary
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 1
+      run: |
+        if [ "${{ matrix.goos }}" = "linux" ]; then
+          # Install cross-compilation tools for Linux
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib
+          if [ "${{ matrix.goarch }}" = "arm64" ]; then
+            sudo apt-get install -y gcc-aarch64-linux-gnu
+            export CC=aarch64-linux-gnu-gcc
+          fi
+        elif [ "${{ matrix.goos }}" = "windows" ]; then
+          # Install mingw for Windows cross-compilation
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64
+          export CC=x86_64-w64-mingw32-gcc
+        elif [ "${{ matrix.goos }}" = "darwin" ]; then
+          # For macOS, we'll disable CGO to avoid cross-compilation issues
+          export CGO_ENABLED=0
+        fi
+        
+        # Create output directory
+        mkdir -p dist
+        
+        # Build the binary
+        go build -ldflags="-s -w" -o dist/go-proxy-rotator-${{ matrix.suffix }} .
+
+    - name: Create release package
+      run: |
+        cd dist
+        
+        # Create package directory
+        mkdir -p go-proxy-rotator-${{ matrix.suffix }}
+        
+        # Copy binary
+        cp go-proxy-rotator-${{ matrix.suffix }} go-proxy-rotator-${{ matrix.suffix }}/
+        
+        # Copy additional files
+        cp ../README.md go-proxy-rotator-${{ matrix.suffix }}/
+        cp ../sample_proxies.txt go-proxy-rotator-${{ matrix.suffix }}/
+        cp -r ../static go-proxy-rotator-${{ matrix.suffix }}/
+        
+        # Create archive
+        if [ "${{ matrix.goos }}" = "windows" ]; then
+          zip -r go-proxy-rotator-${{ matrix.suffix }}.zip go-proxy-rotator-${{ matrix.suffix }}
+        else
+          tar -czf go-proxy-rotator-${{ matrix.suffix }}.tar.gz go-proxy-rotator-${{ matrix.suffix }}
+        fi
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: go-proxy-rotator-${{ matrix.suffix }}
+        path: |
+          dist/go-proxy-rotator-${{ matrix.suffix }}.tar.gz
+          dist/go-proxy-rotator-${{ matrix.suffix }}.zip
+        retention-days: 30
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    - name: Prepare release assets
+      run: |
+        mkdir -p release-assets
+        find artifacts -name "*.tar.gz" -o -name "*.zip" | xargs -I {} cp {} release-assets/
+        ls -la release-assets/
+
+    - name: Get tag name
+      id: tag
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+        else
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.tag.outputs.tag }}
+        name: Release ${{ steps.tag.outputs.tag }}
+        body: |
+          ## Go Proxy Rotator ${{ steps.tag.outputs.tag }}
+          
+          ### Features
+          - 🔄 Smart proxy rotation with health monitoring
+          - 📤 Web interface for proxy list uploads
+          - 💾 SQLite database for persistent storage
+          - 🔧 REST API for proxy management
+          - 📊 Real-time statistics and health metrics
+          
+          ### Downloads
+          Choose the appropriate binary for your platform:
+          
+          - **Linux AMD64**: `go-proxy-rotator-linux-amd64.tar.gz`
+          - **Linux ARM64**: `go-proxy-rotator-linux-arm64.tar.gz`
+          - **Windows AMD64**: `go-proxy-rotator-windows-amd64.exe.zip`
+          - **macOS Intel**: `go-proxy-rotator-darwin-amd64.tar.gz`
+          - **macOS Apple Silicon**: `go-proxy-rotator-darwin-arm64.tar.gz`
+          
+          ### Quick Start
+          1. Download the appropriate binary for your platform
+          2. Extract the archive
+          3. Run the executable: `./go-proxy-rotator` (or `go-proxy-rotator.exe` on Windows)
+          4. Open `http://localhost:3000` in your browser
+          
+          ### Configuration
+          Set environment variables to customize the application:
+          - `PORT=3000` - Server port
+          - `DATABASE_PATH=./proxies.db` - Database file path
+          - `MAX_FILE_SIZE=10485760` - Max upload file size (10MB)
+          
+          See the README.md for detailed usage instructions.
+        files: release-assets/*
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

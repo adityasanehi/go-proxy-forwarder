@@ -15,13 +15,38 @@ An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, fo
 - 🔐 **Authentication Support**: HTTP and SOCKS5 proxy authentication
 - 📝 **Multiple Formats**: Support for various proxy list formats
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### Option 1: Download Pre-built Binary (Recommended)
 
+1. **Download the latest release:**
+   - Go to the [Releases page](../../releases)
+   - Download the appropriate binary for your platform:
+     - Linux: `go-proxy-rotator-linux-amd64.tar.gz`
+     - Windows: `go-proxy-rotator-windows-amd64.exe.zip`
+     - macOS Intel: `go-proxy-rotator-darwin-amd64.tar.gz`
+     - macOS Apple Silicon: `go-proxy-rotator-darwin-arm64.tar.gz`
+
+2. **Extract and run:**
+   ```bash
+   # Linux/macOS
+   tar -xzf go-proxy-rotator-*.tar.gz
+   cd go-proxy-rotator-*
+   ./go-proxy-rotator
+   
+   # Windows
+   # Extract the ZIP file and run go-proxy-rotator.exe
+   ```
+
+3. **Access the web interface:**
+   Open `http://localhost:3000` in your browser
+
+### Option 2: Build from Source
+
+#### Prerequisites
 - [Go](https://golang.org/doc/install) 1.19+ installed on your machine
 
-### Installation
+#### Installation
 
 1. **Clone the repository:**
    ```bash
@@ -29,17 +54,18 @@ An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, fo
    cd go-proxy-rotator
    ```
 
-2. **Install dependencies:**
+2. **Build and run:**
    ```bash
+   # Using Make (recommended)
+   make run
+   
+   # Or manually
    go mod download
+   go build -o go-proxy-rotator .
+   ./go-proxy-rotator
    ```
 
-3. **Run the server:**
-   ```bash
-   go run main.go
-   ```
-
-4. **Access the web interface:**
+3. **Access the web interface:**
    Open `http://localhost:3000` in your browser
 
 ## 📖 Usage
@@ -147,6 +173,82 @@ docker-compose down
 ```
 
 The server will be accessible at `http://localhost:3000`.
+
+## 🚀 Development & Releases
+
+### Building Locally
+
+Use the provided Makefile for common development tasks:
+
+```bash
+# Build for current platform
+make build
+
+# Build for all platforms
+make build-all
+
+# Run tests
+make test
+
+# Run with development settings
+make dev
+
+# Create release packages
+make package
+
+# Clean build artifacts
+make clean
+```
+
+### GitHub Actions
+
+This project uses GitHub Actions for automated building and releasing:
+
+#### Automatic Builds
+- **Trigger**: Push to `main` or `develop` branches, or pull requests to `main`
+- **Actions**: 
+  - Run tests and linting
+  - Build binaries for multiple platforms
+  - Upload build artifacts
+
+#### Releases
+- **Trigger**: Push a git tag (e.g., `v1.0.0`) or manual workflow dispatch
+- **Actions**:
+  - Build binaries for all supported platforms
+  - Create release packages with static files
+  - Automatically create GitHub release with binaries
+
+#### Creating a Release
+
+1. **Tag and push:**
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+2. **Or use GitHub CLI:**
+   ```bash
+   gh release create v1.0.0 --generate-notes
+   ```
+
+3. **Manual release via GitHub Actions:**
+   - Go to Actions tab in GitHub
+   - Select "Release" workflow
+   - Click "Run workflow"
+   - Enter the desired tag name
+
+#### Supported Platforms
+
+The GitHub Actions automatically build for:
+- Linux (AMD64, ARM64)
+- Windows (AMD64)
+- macOS (Intel, Apple Silicon)
+
+Each release includes:
+- Pre-compiled binaries
+- Static web interface files
+- Sample proxy list
+- Documentation
 
 ## 📁 Project Structure
 

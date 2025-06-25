@@ -24,6 +24,13 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
+// Build information (set by ldflags during build)
+var (
+	Version   = "dev"
+	BuildTime = "unknown"
+	GitCommit = "unknown"
+)
+
 func main() {
 	// Load configuration
 	cfg := config.Load()
@@ -75,8 +82,11 @@ func main() {
 	// Health check endpoint
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"status": "ok",
-			"time":   time.Now(),
+			"status":     "ok",
+			"time":       time.Now(),
+			"version":    Version,
+			"build_time": BuildTime,
+			"git_commit": GitCommit,
 		})
 	})
 
@@ -121,6 +131,7 @@ func main() {
 		return nil
 	})
 
+	log.Printf("Go Proxy Rotator %s (build: %s, commit: %s)", Version, BuildTime, GitCommit)
 	log.Printf("Server starting on port %s", cfg.Port)
 	log.Fatal(app.Listen(":" + cfg.Port))
 }
