@@ -108,13 +108,14 @@ jobs:
         fi
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: go-proxy-rotator-${{ matrix.suffix }}
         path: |
           dist/go-proxy-rotator-${{ matrix.suffix }}.tar.gz
           dist/go-proxy-rotator-${{ matrix.suffix }}.zip
         retention-days: 30
+        if-no-files-found: ignore
 
   release:
     name: Create Release
@@ -127,7 +128,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: artifacts
 
