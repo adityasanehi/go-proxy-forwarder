@@ -89,16 +89,27 @@ jobs:
       run: |
         cd dist
         
+        # Debug: List current contents
+        echo "Current directory contents:"
+        ls -la
+        
+        # Clean up any existing directory
+        rm -rf go-proxy-rotator-${{ matrix.suffix }}
+        
         # Create package directory
         mkdir -p go-proxy-rotator-${{ matrix.suffix }}
         
         # Copy binary
         cp go-proxy-rotator-${{ matrix.suffix }} go-proxy-rotator-${{ matrix.suffix }}/
         
-        # Copy additional files
-        cp ../README.md go-proxy-rotator-${{ matrix.suffix }}/
-        cp ../sample_proxies.txt go-proxy-rotator-${{ matrix.suffix }}/
-        cp -r ../static go-proxy-rotator-${{ matrix.suffix }}/
+        # Copy additional files (check if they exist first)
+        [ -f ../README.md ] && cp ../README.md go-proxy-rotator-${{ matrix.suffix }}/ || echo "README.md not found"
+        [ -f ../sample_proxies.txt ] && cp ../sample_proxies.txt go-proxy-rotator-${{ matrix.suffix }}/ || echo "sample_proxies.txt not found"
+        [ -d ../static ] && cp -r ../static go-proxy-rotator-${{ matrix.suffix }}/ || echo "static directory not found"
+        
+        # Debug: Show package contents
+        echo "Package contents:"
+        ls -la go-proxy-rotator-${{ matrix.suffix }}/
         
         # Create archive
         if [ "${{ matrix.goos }}" = "windows" ]; then
