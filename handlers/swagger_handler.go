@@ -30,7 +30,7 @@ func (h *SwaggerHandler) SetupSwaggerRoutes(app *fiber.App) {
 	// Serve Swagger UI
 	app.Get("/docs", h.SwaggerUI)
 	app.Get("/docs/", h.SwaggerUI)
-	
+
 	// Serve Swagger UI static files
 	swaggerUIFS, err := fs.Sub(swaggerUIFiles, "swagger_ui")
 	if err == nil {

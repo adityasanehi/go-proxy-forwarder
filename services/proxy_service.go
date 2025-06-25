@@ -74,7 +74,7 @@ func (s *ProxyService) parseProxyLine(line string) (*models.Proxy, error) {
 
 		proxy.Protocol = u.Scheme
 		proxy.Host = u.Hostname()
-		
+
 		if u.Port() != "" {
 			port, err := strconv.Atoi(u.Port())
 			if err != nil {
@@ -177,7 +177,7 @@ func (s *ProxyService) GetRandomProxy() (*models.Proxy, error) {
 // CheckProxyHealth checks if a proxy is working
 func (s *ProxyService) CheckProxyHealth(proxy *models.Proxy, testURL string) (int, bool) {
 	start := time.Now()
-	
+
 	// Create proxy URL
 	proxyURL, err := url.Parse(proxy.GetURL())
 	if err != nil {
@@ -206,7 +206,7 @@ func (s *ProxyService) CheckProxyHealth(proxy *models.Proxy, testURL string) (in
 	defer resp.Body.Close()
 
 	responseTime := int(time.Since(start).Milliseconds())
-	
+
 	// Check if response is successful
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		return responseTime, true

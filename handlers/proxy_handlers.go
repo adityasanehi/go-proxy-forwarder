@@ -31,8 +31,8 @@ func (h *ProxyHandler) UploadProxyFile(c *fiber.Ctx) error {
 	}
 
 	// Check file extension
-	if file.Header.Get("Content-Type") != "text/plain" && 
-	   !isTextFile(file.Filename) {
+	if file.Header.Get("Content-Type") != "text/plain" &&
+		!isTextFile(file.Filename) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Only .txt files are allowed",
 		})
@@ -70,10 +70,10 @@ func (h *ProxyHandler) UploadProxyFile(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"message":        "Proxies uploaded successfully",
-		"total_parsed":   len(proxies),
-		"total_added":    added,
-		"total_skipped":  len(proxies) - added,
+		"message":       "Proxies uploaded successfully",
+		"total_parsed":  len(proxies),
+		"total_added":   added,
+		"total_skipped": len(proxies) - added,
 	})
 }
 
@@ -179,7 +179,7 @@ func (h *ProxyHandler) GetProxyStats(c *fiber.Ctx) error {
 // HealthCheckProxies performs health check on all proxies
 func (h *ProxyHandler) HealthCheckProxies(c *fiber.Ctx) error {
 	testURL := c.Query("url", "https://httpbin.org/ip")
-	
+
 	err := h.proxyService.HealthCheckAllProxies(testURL)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

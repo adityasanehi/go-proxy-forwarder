@@ -65,7 +65,7 @@ func (db *DB) AddProxy(proxy *models.Proxy) error {
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	now := time.Now()
-	result, err := db.conn.Exec(query, proxy.Host, proxy.Port, proxy.Username, 
+	result, err := db.conn.Exec(query, proxy.Host, proxy.Port, proxy.Username,
 		proxy.Password, proxy.Protocol, proxy.IsActive, now, now)
 	if err != nil {
 		return fmt.Errorf("failed to add proxy: %w", err)
@@ -91,7 +91,7 @@ func (db *DB) GetActiveProxies() ([]*models.Proxy, error) {
 	WHERE is_active = 1 AND fail_count < 5
 	ORDER BY response_time ASC, fail_count ASC
 	`
-	
+
 	rows, err := db.conn.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query active proxies: %w", err)
@@ -121,7 +121,7 @@ func (db *DB) GetAllProxies() ([]*models.Proxy, error) {
 	FROM proxies 
 	ORDER BY created_at DESC
 	`
-	
+
 	rows, err := db.conn.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query all proxies: %w", err)
@@ -147,7 +147,7 @@ func (db *DB) GetAllProxies() ([]*models.Proxy, error) {
 func (db *DB) UpdateProxyHealth(id int, responseTime int, success bool) error {
 	var query string
 	var args []interface{}
-	
+
 	if success {
 		query = `
 		UPDATE proxies 

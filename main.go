@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -66,7 +65,7 @@ func main() {
 
 	// API routes
 	api := app.Group("/api/v1")
-	
+
 	// Proxy management routes
 	api.Post("/proxies/upload", proxyHandler.UploadProxyFile)
 	api.Get("/proxies", proxyHandler.GetAllProxies)
@@ -97,8 +96,8 @@ func main() {
 	// Main proxy middleware (for actual proxy usage)
 	app.Use(func(c *fiber.Ctx) error {
 		// Skip API routes
-		if c.Path() == "/health" || c.Path() == "/api/v1" || 
-		   len(c.Path()) > 7 && c.Path()[:7] == "/api/v1" {
+		if c.Path() == "/health" || c.Path() == "/api/v1" ||
+			len(c.Path()) > 7 && c.Path()[:7] == "/api/v1" {
 			return c.Next()
 		}
 
@@ -147,14 +146,14 @@ func loadInitialProxies(proxyService *services.ProxyService, db *database.DB) er
 	if err != nil {
 		return err
 	}
-	
+
 	if stats.TotalProxies > 0 {
 		log.Printf("Database already contains %d proxies", stats.TotalProxies)
 		return nil
 	}
 
 	log.Println("Loading initial proxy list...")
-	
+
 	proxyList := []string{
 		"31.58.16.86:6053:nufcfuwi:wtohyhtey9hp",
 		"198.37.116.237:6196:nufcfuwi:wtohyhtey9hp",
