@@ -1,8 +1,8 @@
-# Go Proxy Rotator
+# Go Proxy Forwarder
 
 An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, forwarding your requests through randomly selected proxies from a persistent database with health monitoring and management features.
 
-## ✨ Features
+## Features
 
 - 🔄 **Smart Proxy Rotation**: Automatically rotates through healthy proxies
 - 📊 **Health Monitoring**: Tracks proxy response times and failure rates
@@ -15,7 +15,7 @@ An advanced proxy rotator built with Go and Fiber. It acts as a proxy server, fo
 - 🔐 **Authentication Support**: HTTP and SOCKS5 proxy authentication
 - 📝 **Multiple Formats**: Support for various proxy list formats
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -163,7 +163,7 @@ go-proxy-rotator/
 └── README.md
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
