@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package main
@@ -40,7 +41,7 @@ func main() {
 
 func validateSpec() {
 	fmt.Println("Validating OpenAPI specification...")
-	
+
 	// Read the YAML file
 	data, err := os.ReadFile("docs/swagger.yaml")
 	if err != nil {
@@ -67,7 +68,7 @@ func validateSpec() {
 
 func convertToJSON() {
 	fmt.Println("Converting YAML to JSON...")
-	
+
 	// Read YAML
 	data, err := os.ReadFile("docs/swagger.yaml")
 	if err != nil {
@@ -98,7 +99,7 @@ func convertToJSON() {
 
 func convertToYAML() {
 	fmt.Println("Converting JSON to YAML...")
-	
+
 	// Read JSON
 	data, err := os.ReadFile("docs/swagger.json")
 	if err != nil {
