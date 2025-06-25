@@ -93,29 +93,32 @@ jobs:
         echo "Current directory contents:"
         ls -la
         
+        # Define package directory name
+        PACKAGE_DIR="go-proxy-rotator-${{ matrix.suffix }}-package"
+        
         # Clean up any existing directory
-        rm -rf go-proxy-rotator-${{ matrix.suffix }}
+        rm -rf "${PACKAGE_DIR}"
         
         # Create package directory
-        mkdir -p go-proxy-rotator-${{ matrix.suffix }}
+        mkdir -p "${PACKAGE_DIR}"
         
         # Copy binary
-        cp go-proxy-rotator-${{ matrix.suffix }} go-proxy-rotator-${{ matrix.suffix }}/
+        cp "go-proxy-rotator-${{ matrix.suffix }}" "${PACKAGE_DIR}/"
         
         # Copy additional files (check if they exist first)
-        [ -f ../README.md ] && cp ../README.md go-proxy-rotator-${{ matrix.suffix }}/ || echo "README.md not found"
-        [ -f ../sample_proxies.txt ] && cp ../sample_proxies.txt go-proxy-rotator-${{ matrix.suffix }}/ || echo "sample_proxies.txt not found"
-        [ -d ../static ] && cp -r ../static go-proxy-rotator-${{ matrix.suffix }}/ || echo "static directory not found"
+        [ -f ../README.md ] && cp ../README.md "${PACKAGE_DIR}/" || echo "README.md not found"
+        [ -f ../sample_proxies.txt ] && cp ../sample_proxies.txt "${PACKAGE_DIR}/" || echo "sample_proxies.txt not found"
+        [ -d ../static ] && cp -r ../static "${PACKAGE_DIR}/" || echo "static directory not found"
         
         # Debug: Show package contents
         echo "Package contents:"
-        ls -la go-proxy-rotator-${{ matrix.suffix }}/
+        ls -la "${PACKAGE_DIR}/"
         
         # Create archive
         if [ "${{ matrix.goos }}" = "windows" ]; then
-          zip -r go-proxy-rotator-${{ matrix.suffix }}.zip go-proxy-rotator-${{ matrix.suffix }}
+          zip -r "go-proxy-rotator-${{ matrix.suffix }}.zip" "${PACKAGE_DIR}"
         else
-          tar -czf go-proxy-rotator-${{ matrix.suffix }}.tar.gz go-proxy-rotator-${{ matrix.suffix }}
+          tar -czf "go-proxy-rotator-${{ matrix.suffix }}.tar.gz" "${PACKAGE_DIR}"
         fi
 
     - name: Upload artifacts
